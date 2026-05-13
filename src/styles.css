@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-d4bg text-stone-200 antialiased;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+@layer components {
+  .stat-input {
+    @apply w-full bg-d4bg border border-d4border rounded px-2 py-1.5 text-right
+           text-stone-100 focus:outline-none focus:border-d4gold focus:ring-1 focus:ring-d4gold;
+  }
+  .stat-label {
+    @apply text-xs text-stone-400 mb-1;
+  }
+  .card {
+    @apply bg-d4card border border-d4border rounded-lg p-4;
+  }
+}
