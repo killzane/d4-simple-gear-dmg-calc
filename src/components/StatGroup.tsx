@@ -1,19 +1,22 @@
-import { STAT_KEYS, type Stats } from '../damage';
+import type { Stats, StatKey } from '../damage';
 
 type Props = {
   title: string;
   subtitle?: string;
   accent?: 'default' | 'old' | 'new';
+  keys: readonly StatKey[];
   value: Stats;
   onChange: (next: Stats) => void;
 };
 
-const LABELS: Record<(typeof STAT_KEYS)[number], { label: string; unit: string; hint?: string }> = {
+const LABELS: Record<StatKey, { label: string; unit: string; hint?: string }> = {
   weaponDmg: { label: '武器傷害', unit: '', hint: '武器面板 DPS；非武器槽請填 0' },
   mainStat: { label: '主屬性', unit: '' },
   critDmg: { label: '爆擊傷害', unit: '%' },
   vulnDmg: { label: '易傷', unit: '%' },
   elemDmg: { label: '屬性傷害', unit: '%', hint: '含 all 傷' },
+  critChance: { label: '爆擊機率', unit: '%', hint: '僅期望值模式生效；基礎 5% 已內建' },
+  skillRank: { label: '技能等級', unit: '', hint: '含技能樹點數；gear 的 +階填在對應欄' },
 };
 
 const ACCENT: Record<NonNullable<Props['accent']>, string> = {
@@ -22,8 +25,8 @@ const ACCENT: Record<NonNullable<Props['accent']>, string> = {
   new: 'border-d4gold/70',
 };
 
-export function StatGroup({ title, subtitle, accent = 'default', value, onChange }: Props) {
-  const update = (key: keyof Stats, raw: string) => {
+export function StatGroup({ title, subtitle, accent = 'default', keys, value, onChange }: Props) {
+  const update = (key: StatKey, raw: string) => {
     const n = raw === '' || raw === '-' ? 0 : Number(raw);
     if (Number.isNaN(n)) return;
     onChange({ ...value, [key]: n });
@@ -36,7 +39,7 @@ export function StatGroup({ title, subtitle, accent = 'default', value, onChange
         {subtitle && <p className="text-xs text-stone-400 mt-0.5">{subtitle}</p>}
       </div>
       <div className="space-y-2">
-        {STAT_KEYS.map((k) => {
+        {keys.map((k) => {
           const meta = LABELS[k];
           return (
             <label key={k} className="block">

@@ -1,17 +1,19 @@
-import { compare, type Stats } from '../damage';
+import { compare, type Stats, type CalcOptions } from '../damage';
 
 type Props = {
   other: Stats;
   oldItem: Stats;
   newItem: Stats;
+  opts: CalcOptions;
 };
 
 const fmtPct = (n: number) => `${(n * 100).toFixed(2)}%`;
 const fmtMult = (n: number) => `×${n.toFixed(3)}`;
-const fmtNum = (n: number) => (n === 0 ? '0' : n.toLocaleString(undefined, { maximumFractionDigits: 0 }));
+const fmtNum = (n: number) =>
+  n === 0 ? '0' : n.toLocaleString(undefined, { maximumFractionDigits: 0 });
 
-export function ResultPanel({ other, oldItem, newItem }: Props) {
-  const { totalOld, totalNew, dOld, dNew, delta } = compare(other, oldItem, newItem);
+export function ResultPanel({ other, oldItem, newItem, opts }: Props) {
+  const { totalOld, totalNew, dOld, dNew, ratio, delta } = compare(other, oldItem, newItem, opts);
 
   const valid = dOld.total > 0;
   const deltaColor = !valid
@@ -32,10 +34,12 @@ export function ResultPanel({ other, oldItem, newItem }: Props) {
         <div className={`text-5xl font-bold mt-1 ${deltaColor}`}>
           {valid ? `${sign}${fmtPct(delta)}` : '—'}
         </div>
-        {!valid && (
-          <div className="text-xs text-stone-500 mt-2">
-            需要至少有武器傷害與主屬性才能計算
+        {valid ? (
+          <div className="text-sm text-stone-400 mt-2">
+            新裝 / 舊裝 = <span className="text-stone-200 tabular-nums">{fmtMult(ratio)}</span>
           </div>
+        ) : (
+          <div className="text-xs text-stone-500 mt-2">需要至少有武器傷害與主屬性才能計算</div>
         )}
       </div>
 
@@ -60,7 +64,15 @@ export function ResultPanel({ other, oldItem, newItem }: Props) {
               <td className="text-right tabular-nums">{fmtNum(totalNew.mainStat)}</td>
             </tr>
             <tr className="border-b border-d4border/50">
-              <td className="py-1.5">爆擊傷害 桶</td>
+              <td className="py-1.5">
+                爆擊 桶
+                {opts.critMode === 'expected' && (
+                  <span className="text-stone-500 text-xs">
+                    {' '}
+                    （爆率 {fmtPct(dOld.critChanceEff)} → {fmtPct(dNew.critChanceEff)}）
+                  </span>
+                )}
+              </td>
               <td className="text-right tabular-nums">{fmtMult(dOld.critMult)}</td>
               <td className="text-right tabular-nums">{fmtMult(dNew.critMult)}</td>
             </tr>
@@ -74,6 +86,19 @@ export function ResultPanel({ other, oldItem, newItem }: Props) {
               <td className="text-right tabular-nums">{fmtMult(dOld.elemMult)}</td>
               <td className="text-right tabular-nums">{fmtMult(dNew.elemMult)}</td>
             </tr>
+            {opts.skillScaling && (
+              <tr className="border-b border-d4border/50">
+                <td className="py-1.5">
+                  技能等級 桶
+                  <span className="text-stone-500 text-xs">
+                    {' '}
+                    （rank {fmtNum(dOld.effectiveRank)} → {fmtNum(dNew.effectiveRank)}）
+                  </span>
+                </td>
+                <td className="text-right tabular-nums">{fmtMult(dOld.skillMult)}</td>
+                <td className="text-right tabular-nums">{fmtMult(dNew.skillMult)}</td>
+              </tr>
+            )}
             <tr className="font-semibold text-d4gold">
               <td className="py-1.5">相對傷害</td>
               <td className="text-right tabular-nums">{dOld.total.toExponential(3)}</td>
@@ -84,8 +109,14 @@ export function ResultPanel({ other, oldItem, newItem }: Props) {
       </div>
 
       <p className="text-[11px] text-stone-500 mt-3 leading-relaxed">
-        公式：傷害 ∝ 武器傷害 × 主屬性 × (1.5 + 爆擊傷害%) × (1.2 + 易傷%) × (1.0 + 屬性傷害%)。
-        假設爆擊命中，未計入職業專屬乘區、Overpower、Aspect [x] 全域倍率。
+        公式：傷害 ∝ 武器傷害 × 主屬性 ×{' '}
+        {opts.critMode === 'expected'
+          ? '(1 + 爆擊機率 × (0.5 + 爆擊傷害%))'
+          : '(1.5 + 爆擊傷害%)'}{' '}
+        × (1.2 + 易傷%) × (1.0 + 屬性傷害%)
+        {opts.skillScaling && ' × (1 + (技能等級 − 1) × 每階成長%)'}。
+        {opts.critMode === 'assume' && ' 目前假設爆擊命中。'}
+        未計入職業專屬乘區、Overpower、Aspect [x] 全域倍率。
       </p>
     </div>
   );
