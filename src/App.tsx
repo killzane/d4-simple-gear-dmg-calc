@@ -18,9 +18,8 @@ export default function App() {
   const visibleKeys = useMemo<StatKey[]>(() => {
     const keys = [...BASE_KEYS];
     if (state.settings.critMode === 'expected') keys.push('critChance');
-    if (state.settings.skillScaling) keys.push('skillRank');
     return keys;
-  }, [state.settings.critMode, state.settings.skillScaling]);
+  }, [state.settings.critMode]);
 
   return (
     <div className="min-h-full">

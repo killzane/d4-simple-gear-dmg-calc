@@ -25,19 +25,14 @@ const isStats = (v: unknown): v is Stats => {
     typeof o.critDmg === 'number' &&
     typeof o.vulnDmg === 'number' &&
     typeof o.elemDmg === 'number' &&
-    typeof o.critChance === 'number' &&
-    typeof o.skillRank === 'number'
+    typeof o.critChance === 'number'
   );
 };
 
 const isCalcOptions = (v: unknown): v is CalcOptions => {
   if (!v || typeof v !== 'object') return false;
   const o = v as Record<string, unknown>;
-  return (
-    (o.critMode === 'assume' || o.critMode === 'expected') &&
-    typeof o.skillScaling === 'boolean' &&
-    typeof o.skillGrowthPct === 'number'
-  );
+  return o.critMode === 'assume' || o.critMode === 'expected';
 };
 
 export const isAppState = (v: unknown): v is AppState => {

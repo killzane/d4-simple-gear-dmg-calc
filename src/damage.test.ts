@@ -11,8 +11,8 @@ import {
 
 const close = (a: number, b: number, eps = 1e-9) => Math.abs(a - b) < eps;
 
-const ASSUME: CalcOptions = { critMode: 'assume', skillScaling: false, skillGrowthPct: 2 };
-const EXPECTED: CalcOptions = { critMode: 'expected', skillScaling: false, skillGrowthPct: 2 };
+const ASSUME: CalcOptions = { critMode: 'assume' };
+const EXPECTED: CalcOptions = { critMode: 'expected' };
 
 describe('dmg() — assume crit mode', () => {
   it('returns 0 when weaponDmg is 0', () => {
@@ -28,7 +28,6 @@ describe('dmg() — assume crit mode', () => {
     expect(r.critMult).toBe(1.5);
     expect(r.vulnMult).toBe(1.2);
     expect(r.elemMult).toBe(1.0);
-    expect(r.skillMult).toBe(1);
     expect(r.total).toBe(100 * 1000 * 1.5 * 1.2 * 1.0);
   });
 
@@ -48,7 +47,6 @@ describe('dmg() — assume crit mode', () => {
   it('DEFAULT_OPTIONS behaves as assume mode', () => {
     const r = dmg({ ...ZERO, weaponDmg: 100, mainStat: 1000 }, DEFAULT_OPTIONS);
     expect(r.critMult).toBe(1.5);
-    expect(r.skillMult).toBe(1);
   });
 });
 
@@ -74,31 +72,6 @@ describe('dmg() — expected crit mode', () => {
   });
 });
 
-describe('dmg() — skill scaling', () => {
-  const withSkill = (growth: number): CalcOptions => ({
-    critMode: 'assume',
-    skillScaling: true,
-    skillGrowthPct: growth,
-  });
-
-  it('skillMult is 1 when scaling is off, regardless of skillRank', () => {
-    const r = dmg({ ...ZERO, weaponDmg: 1, mainStat: 1, skillRank: 12 }, ASSUME);
-    expect(r.skillMult).toBe(1);
-  });
-
-  it('skillMult is 1 at rank <= 1', () => {
-    expect(dmg({ ...ZERO, weaponDmg: 1, mainStat: 1, skillRank: 0 }, withSkill(10)).skillMult).toBe(1);
-    expect(dmg({ ...ZERO, weaponDmg: 1, mainStat: 1, skillRank: 1 }, withSkill(10)).skillMult).toBe(1);
-  });
-
-  it('scales linearly above rank 1', () => {
-    // rank 6, growth 2% -> 1 + 5 * 0.02 = 1.10
-    const r = dmg({ ...ZERO, weaponDmg: 1, mainStat: 1, skillRank: 6 }, withSkill(2));
-    expect(close(r.skillMult, 1.1)).toBe(true);
-    expect(r.effectiveRank).toBe(6);
-  });
-});
-
 describe('sum()', () => {
   it('returns ZERO for empty input', () => {
     expect(sum()).toEqual(ZERO);
@@ -112,7 +85,6 @@ describe('sum()', () => {
       vulnDmg: 5,
       elemDmg: 1,
       critChance: 8,
-      skillRank: 2,
     };
     const b: Stats = {
       weaponDmg: 50,
@@ -121,7 +93,6 @@ describe('sum()', () => {
       vulnDmg: 15,
       elemDmg: 3,
       critChance: 12,
-      skillRank: 3,
     };
     expect(sum(a, b)).toEqual({
       weaponDmg: 150,
@@ -130,7 +101,6 @@ describe('sum()', () => {
       vulnDmg: 20,
       elemDmg: 4,
       critChance: 20,
-      skillRank: 5,
     });
   });
 });
@@ -176,13 +146,11 @@ describe('compare()', () => {
     expect(close(delta, 900 / 850 - 1, 1e-12)).toBe(true);
   });
 
-  it('skill-rank swap reflects diminishing marginal value', () => {
-    const opts: CalcOptions = { critMode: 'assume', skillScaling: true, skillGrowthPct: 10 };
-    const other: Stats = { ...ZERO, weaponDmg: 1, mainStat: 1, skillRank: 5 };
-    const oldItem: Stats = { ...ZERO, skillRank: 0 };
-    const newItem: Stats = { ...ZERO, skillRank: 2 };
-    // old rank 5 -> skillMult 1 + 4*0.1 = 1.4 ; new rank 7 -> 1 + 6*0.1 = 1.6
-    const { delta } = compare(other, oldItem, newItem, opts);
-    expect(close(delta, 1.6 / 1.4 - 1, 1e-12)).toBe(true);
+  it('crit-chance swap only matters in expected mode', () => {
+    const other: Stats = { ...ZERO, weaponDmg: 1, mainStat: 1, critDmg: 100 };
+    const oldItem: Stats = { ...ZERO, critChance: 0 };
+    const newItem: Stats = { ...ZERO, critChance: 20 };
+    expect(compare(other, oldItem, newItem, ASSUME).delta).toBe(0);
+    expect(compare(other, oldItem, newItem, EXPECTED).delta).toBeGreaterThan(0);
   });
 });

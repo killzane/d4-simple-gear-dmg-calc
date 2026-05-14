@@ -86,19 +86,6 @@ export function ResultPanel({ other, oldItem, newItem, opts }: Props) {
               <td className="text-right tabular-nums">{fmtMult(dOld.elemMult)}</td>
               <td className="text-right tabular-nums">{fmtMult(dNew.elemMult)}</td>
             </tr>
-            {opts.skillScaling && (
-              <tr className="border-b border-d4border/50">
-                <td className="py-1.5">
-                  技能等級 桶
-                  <span className="text-stone-500 text-xs">
-                    {' '}
-                    （rank {fmtNum(dOld.effectiveRank)} → {fmtNum(dNew.effectiveRank)}）
-                  </span>
-                </td>
-                <td className="text-right tabular-nums">{fmtMult(dOld.skillMult)}</td>
-                <td className="text-right tabular-nums">{fmtMult(dNew.skillMult)}</td>
-              </tr>
-            )}
             <tr className="font-semibold text-d4gold">
               <td className="py-1.5">相對傷害</td>
               <td className="text-right tabular-nums">{dOld.total.toExponential(3)}</td>
@@ -113,8 +100,7 @@ export function ResultPanel({ other, oldItem, newItem, opts }: Props) {
         {opts.critMode === 'expected'
           ? '(1 + 爆擊機率 × (0.5 + 爆擊傷害%))'
           : '(1.5 + 爆擊傷害%)'}{' '}
-        × (1.2 + 易傷%) × (1.0 + 屬性傷害%)
-        {opts.skillScaling && ' × (1 + (技能等級 − 1) × 每階成長%)'}。
+        × (1.2 + 易傷%) × (1.0 + 屬性傷害%)。
         {opts.critMode === 'assume' && ' 目前假設爆擊命中。'}
         未計入職業專屬乘區、Overpower、Aspect [x] 全域倍率。
       </p>

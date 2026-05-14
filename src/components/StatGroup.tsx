@@ -16,7 +16,6 @@ const LABELS: Record<StatKey, { label: string; unit: string; hint?: string }> = 
   vulnDmg: { label: '易傷', unit: '%' },
   elemDmg: { label: '屬性傷害', unit: '%', hint: '含 all 傷' },
   critChance: { label: '爆擊機率', unit: '%', hint: '僅期望值模式生效；基礎 5% 已內建' },
-  skillRank: { label: '技能等級', unit: '', hint: '含技能樹點數；gear 的 +階填在對應欄' },
 };
 
 const ACCENT: Record<NonNullable<Props['accent']>, string> = {
