@@ -62,3 +62,7 @@ npm run build
 4. push 後等 Actions 跑完（約 1–2 分鐘），訪問 `https://<你的帳號>.github.io/d4-simple-gear-dmg-calc/`
 
 之後每次 push 都會自動重新部署。
+
+## License
+
+MIT — 詳見 [LICENSE](./LICENSE)。
