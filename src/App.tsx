@@ -43,6 +43,21 @@ export default function App() {
           <StatGroup
             title="其他來源"
             subtitle="角色本身 + 未替換的其他裝備（= 卸下要換的那件後的數值）"
+            note={
+              <div className="text-[11px] text-stone-500 mt-2 space-y-1 leading-relaxed">
+                <p>
+                  ※ 請手動把裝備上的倍率屬性「相加」後填入，不要直接讀面板數字 —
+                  面板會把 +（add）和 [x]（more）相乘顯示，跟分桶公式不同。
+                  淬煉 affix 全部是 +（add），加總即可。
+                </p>
+                <p>※ 屬性傷害欄是「全傷 %」+「屬性傷 %」相加。</p>
+                <p>
+                  ※ 輸入框支援加減乘除運算式，例如{' '}
+                  <code className="text-stone-300">120+80+50</code>{' '}
+                  離開焦點後會自動算成 250。
+                </p>
+              </div>
+            }
             keys={visibleKeys}
             value={state.other}
             onChange={(other) => setState({ ...state, other })}

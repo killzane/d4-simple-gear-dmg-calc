@@ -1,8 +1,11 @@
+import type { ReactNode } from 'react';
 import type { Stats, StatKey } from '../damage';
+import { StatInput } from './StatInput';
 
 type Props = {
   title: string;
   subtitle?: string;
+  note?: ReactNode;
   accent?: 'default' | 'old' | 'new';
   keys: readonly StatKey[];
   value: Stats;
@@ -14,7 +17,7 @@ const LABELS: Record<StatKey, { label: string; unit: string; hint?: string }> = 
   mainStat: { label: '主屬性', unit: '' },
   critDmg: { label: '爆擊傷害', unit: '%' },
   vulnDmg: { label: '易傷', unit: '%' },
-  elemDmg: { label: '屬性傷害', unit: '%', hint: '含 all 傷' },
+  elemDmg: { label: '屬性傷害', unit: '%', hint: '全傷% + 屬性傷% 相加' },
   critChance: { label: '爆擊機率', unit: '%', hint: '僅期望值模式生效；基礎 5% 已內建' },
 };
 
@@ -24,18 +27,13 @@ const ACCENT: Record<NonNullable<Props['accent']>, string> = {
   new: 'border-d4gold/70',
 };
 
-export function StatGroup({ title, subtitle, accent = 'default', keys, value, onChange }: Props) {
-  const update = (key: StatKey, raw: string) => {
-    const n = raw === '' || raw === '-' ? 0 : Number(raw);
-    if (Number.isNaN(n)) return;
-    onChange({ ...value, [key]: n });
-  };
-
+export function StatGroup({ title, subtitle, note, accent = 'default', keys, value, onChange }: Props) {
   return (
     <div className={`card ${ACCENT[accent]}`}>
       <div className="mb-3">
         <h2 className="text-lg font-semibold text-d4gold">{title}</h2>
         {subtitle && <p className="text-xs text-stone-400 mt-0.5">{subtitle}</p>}
+        {note}
       </div>
       <div className="space-y-2">
         {keys.map((k) => {
@@ -49,13 +47,9 @@ export function StatGroup({ title, subtitle, accent = 'default', keys, value, on
                 </span>
                 {meta.hint && <span className="text-[10px] text-stone-500">{meta.hint}</span>}
               </div>
-              <input
-                type="number"
-                inputMode="decimal"
-                className="stat-input"
-                value={value[k] === 0 ? '' : value[k]}
-                placeholder="0"
-                onChange={(e) => update(k, e.target.value)}
+              <StatInput
+                value={value[k]}
+                onCommit={(n) => onChange({ ...value, [k]: n })}
               />
             </label>
           );
